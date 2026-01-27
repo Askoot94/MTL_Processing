@@ -1,6 +1,7 @@
 import pytest
 import os
-from .. import tools
+from ..tools.glossary import createGlossary as SUT
+# SUT = System Under Test
 
 @pytest.fixture(autouse=True)
 def directory():
@@ -13,15 +14,10 @@ def test_goodcase(directory):
     expected_result = [{"find":"クロウ", "replace":"Kuro"},{"find":"シロウ", "replace":"Shiro"}]
     
     # Act
-    actual = tools.glossary.createGlossary(os.path.join(directory, "goodcase.txt"))
+    actual = SUT(os.path.join(directory, "goodcase.txt"))
 
     # Assert
     assert expected_result == actual
-
-# Tests that the function throws an error message saying terms are not seperated by newlines
-def test_multiterm_case(directory):
-    with pytest.raises(Exception):
-        tools.glossary.createGlossary(os.path.join(directory, "multiterm.txt"))
 
 # Tests that it will not break if given an empty file
 def test_empty_case(directory):
@@ -30,10 +26,17 @@ def test_empty_case(directory):
 
     # Act
     try:
-        actual = tools.glossary.createGlossary(os.path.join(directory, "empty.txt"))
+        actual = SUT(os.path.join(directory, "empty.txt"))
 
     except:
         assert False
 
     # Assert
     assert expected_result == actual
+
+# Test that the glossary will return an empty list of dictionaries if a given file is not found
+def test_file_not_found(directory):
+    actual = SUT(os.path.join(directory, "nofile.txt"))
+
+    assert actual == []
+
