@@ -36,7 +36,14 @@ def test_empty_case(directory):
 
 # Test that the glossary will return an empty list of dictionaries if a given file is not found
 def test_file_not_found(directory):
-    actual = SUT(os.path.join(directory, "nofile.txt"))
+    actual = SUT(os.path.join(directory, "noFile.txt"))
 
     assert actual == []
 
+def test_missing_equal(directory):
+    expected = [
+        {"find":"hello world", "replace":"oh no"},
+        {"find":"", "replace":"boo"}]
+    actual = SUT(os.path.join(directory, "missingEqual.txt"))
+
+    assert actual == expected
