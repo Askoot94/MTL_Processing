@@ -1,14 +1,12 @@
-import tools
+# If commandline arguments needed use: import sys and pass sys.argv to QApplication
 
-# Line to translate
-base_text = str("　クロウは原作主人公ことシロウと瓜二つの容姿をしている。\nシロウの肌を褐色にして髪色を銀にすればまんま俺だ。")
+from PyQt6.QtWidgets import QApplication
+from tools.application_layout import MainApplication
 
-# Create Glossary
-glossary = tools.glossary.createGlossary("./Example Files/glossary.txt")
 
-# Start Replacement
-replaced = tools.glossary.replaceTerms(base_text, glossary)
+app = QApplication([])
 
-# Replacement for Translation
-print(replaced)
+mainDisplay = MainApplication()
+mainDisplay.show()       # Since mainWindow is parent it's hidden by default
 
+app.exec()
