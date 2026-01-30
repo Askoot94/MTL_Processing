@@ -11,17 +11,20 @@ def createGlossary(filename:str):
 
             # Grab a line from the file
             for Line in glossaryFile:
-                # remove trailing newline on right side
-                Line = Line.rstrip()
-                
-                # find '='
+                # Validate by finding '='
                 delim = Line.find("=")
- 
-                # Identify and Store character(s) to remove and insert
-                split = dict(find =Line[:delim], replace =Line[delim+1:])
                 
-                # add the new dictionary to list
-                terms.append(split)
+                # If any '=' found then proceed, otherwise ignore.
+                if delim != -1:
+                    # remove trailing newline on right side
+                    Line = Line.rstrip()
+                    
+                    # Identify and Store character(s) to remove and insert
+                    split = dict(find =Line[:delim], replace =Line[delim+1:])
+                    
+                    # add the new dictionary to list
+                    terms.append(split)
+
         return terms
     except FileNotFoundError as e:
         e.add_note("Requested file was not found.")
