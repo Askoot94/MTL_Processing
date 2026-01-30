@@ -27,6 +27,17 @@ def createGlossary(filename:str):
         e.add_note("Requested file was not found.")
         return terms
 
+def getFileText(filename:str):
+    # try to open file
+    try:
+        # with statement will handle opening and closing the file.
+        with open(filename, "rt", encoding="UTF-8") as glossaryFile:
+            fullText = glossaryFile.read()
+            return fullText
+    except FileNotFoundError as e:
+        e.add_note("Please file location or given filename.")
+        raise e
+
 def replaceTerms(text: str, glossary:list):
     if glossary != [] and text != "":
         send = str()
