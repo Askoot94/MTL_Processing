@@ -88,9 +88,7 @@ def test_traling_newline_file(directory):
     assert actual == expected
 
 def test_good_text(directory):
-    given = "crow=Kuro" \
-    "Shirou=Shiro" \
-    "Ramia=Lamia"
+    given = "crow=Kuro\nShirou=Shiro\nRamia=Lamia"
 
     expected = [
         {'find': "crow", 'replace': "Kuro"},
@@ -112,8 +110,7 @@ def test_empty_text(directory):
     assert actual == expected
 
 def test_missing_equal_text(directory):
-    given = "This line does not have an equal sign" \
-    "But it does=in the second line"
+    given = "This line does not have an equal sign\nBut it does=in the second line"
 
     expected = [{'find': "But it does", 'replace': "in the second line"}]
 
@@ -124,15 +121,17 @@ def test_missing_equal_text(directory):
 def test_chinese_text(directory):
     given = "万智牌=Magic: The Gathering\n炉石=Hearthstone\n"
 
-    expected = [{'find': "But it does", 'replace': "in the second line"}]
+    expected = [
+        {'find': "万智牌", 'replace': "Magic: The Gathering"},
+        {'find': "炉石", 'replace': "Hearthstone"}
+        ]
 
     actual = SUT(given)
 
     assert actual == expected
 
 def test_japanese_text(directory):
-    given = "イチロウ=Ichirou" \
-        "ササリス=Sasaris"
+    given = "イチロウ=Ichirou\nササリス=Sasaris"
 
     expected = [
         {'find': "イチロウ", 'replace': "Ichirou"},
@@ -144,8 +143,7 @@ def test_japanese_text(directory):
     assert actual == expected
 
 def test_blank_oneside_text(directory):
-    given = "=BLANK" \
-        "NOTHING="
+    given = "=BLANK\nNOTHING="
 
     expected = [
         {'find': "", 'replace': "BLANK"},
