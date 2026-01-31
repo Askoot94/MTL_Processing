@@ -1,2 +1,2 @@
-クロウ=Kuro
-シロウ=Shiro
+Qrow=Kuro
+Natto=Nats

@@ -1,34 +1,56 @@
-def createGlossary(filename:str):
-    # Need to grab Glossary of replacement terms from a file. And store in preprocess
+def createGlossary(givenText:str):
+    # !!!!!!
+    # This is wrong, shouldn't be allowed to work for both Files and actual text, seperate them into different functions
+    # !!!!!!
     
     # Identify List of terms to replace
     terms = list(dict())
-    
-    # try to open file
-    try:
-        # with statement will handle opening and closing the file.
-        with open(filename, "rt", encoding="UTF-8") as glossaryFile:
 
-            # Grab a line from the file
-            for Line in glossaryFile:
-                # Validate by finding '='
-                delim = Line.find("=")
-                
-                # If any '=' found then proceed, otherwise ignore.
-                if delim != -1:
-                    # remove trailing newline on right side
-                    Line = Line.rstrip()
-                    
-                    # Identify and Store character(s) to remove and insert
-                    split = dict(find =Line[:delim], replace =Line[delim+1:])
-                    
-                    # add the new dictionary to list
-                    terms.append(split)
+    # Check the last 4 letters in a text, and check if it ends with ".txt" or ".rtf"
+    if givenText.find(".txt" or ".rtf", givenText.__len__() - 4) != -1:
+        # try to open file
+        try:
+            # with statement will handle opening and closing the file.
+            with open(givenText, "rt", encoding="UTF-8") as glossaryFile:
 
-        return terms
-    except FileNotFoundError as e:
-        e.add_note("Requested file was not found.")
-        return terms
+                # Grab a line from the file
+                for singleLine in glossaryFile:
+                    tmp = getEntry(singleLine)
+                    if tmp != None:
+                        terms.append(tmp)
+
+        except FileNotFoundError as e:
+            e.add_note("Requested file was not found.")
+    else:
+        for line in givenText.splitlines():
+            tmp = getEntry(line)
+            if tmp != None:
+                terms.append(tmp)
+
+    return terms
+
+        
+# Gets a Dictionary from a single Line
+def getEntry(Line:str):
+
+    # Validate by finding '='
+    delim = Line.find("=")
+
+    # If any '=' found then proceed, otherwise ignore.
+    if delim != -1:
+        # Check for trailing newline
+        if Line[Line.__len__()-1] == '\n':
+            end = Line.__len__()-1
+        else:
+            end = Line.__len__()
+
+        # Identify and Store character(s) to remove and insert
+        split = dict(find =Line[:delim], replace =Line[delim+1:end])
+        
+        # add the new dictionary to list
+        return split
+    else:
+        return None
 
 def replaceTerms(text: str, glossary:list):
     if glossary != [] and text != "":
@@ -38,7 +60,7 @@ def replaceTerms(text: str, glossary:list):
                 # Check for find and replace terms in given dict
                 if "find" and "replace" in term:    
                     line = line.replace(term["find"],term["replace"])
-                    send = send + '\n' + line
+                    send = send + line
                 else:
                     print("Bad Dict recieved")
                     print(term)
