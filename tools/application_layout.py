@@ -24,6 +24,16 @@ class title(QLabel):
         self.setMaximumSize(600, 400)
 
 class glossaryInsert(QPlainTextEdit):
+    glossary = []
+
+    def updateGlossary(self):
+        print("Update Glossary Called")
+        plainText = self.toPlainText()
+
+        # Need to implment faster iteration that checks if term already exists in list before adding.
+        self.glossary.clear()
+        self.glossary = createGlossary(plainText)
+
     def __init__(self):
         super().__init__()
 
@@ -36,14 +46,27 @@ class glossaryInsert(QPlainTextEdit):
         self.addScrollBarWidget(QScrollBar(), Qt.AlignmentFlag(0x0002))
 
 class TopLayer(QHBoxLayout):
+    @pyqtSlot()
+    def startGlossary(self):
+        # Call for update to Glossary property in glossaryInsert
+        self.glossaryWidget.updateGlossary()
+
     def __init__(self):
         super().__init__()
 
-        self.glossary = glossaryInsert()
+        self.glossaryWidget = glossaryInsert()
+        capTitle = title()
+        capTitle.setAlignment(Qt.AlignmentFlag(0x0021))
+        
+        update = QPushButton()
+        update.released.connect(self.startGlossary)
+        update.setFixedSize(50, 20)
+        update.setText("Update")
 
         # Consists of Title and Glossary Replacements
-        self.addWidget(title())
-        self.addWidget(self.glossary)
+        self.addWidget(capTitle)
+        self.addWidget(self.glossaryWidget)
+        self.addWidget(update)
 
 # This is the TextEdit box that will receive the pre-replaced text
 class inputText(QTextEdit):
@@ -60,7 +83,6 @@ class inputText(QTextEdit):
         self.setBaseSize(960, 900)
         self.setMaximumHeight(1000)
     
-
 class outputText(QTextEdit):
     
     def updateText(self, str):
@@ -82,15 +104,15 @@ class outputText(QTextEdit):
         self.setPlaceholderText("Replaced Text will appear here...")
 
 class TextLayer(QVBoxLayout):
-    # buttonClicked = pyqtSignal((str, ))
+    buttonClicked = pyqtSignal((str, ))
 
-    # @pyqtSlot()
-    # def startReplacement(self):
-    #     document = self.textBox.toPlainText()
-    #     self.buttonClicked.emit(document)
+    @pyqtSlot()
+    def startReplacement(self):
+        document = self.textBox.toPlainText()
+        self.buttonClicked.emit(document)
 
-    # def updateOutputText(self, text:str):
-    #     self.output.updateText(text)
+    def updateOutputText(self, text:str):
+        self.output.updateText(text)
 
     def __init__(self):
         super().__init__()
@@ -102,7 +124,7 @@ class TextLayer(QVBoxLayout):
         
         self.submit = QPushButton()
         self.submit.setText("Start Replacement")
-        # self.submit.clicked.connect(lambda: self.startReplacement())
+        self.submit.clicked.connect(lambda: self.startReplacement())
 
         inputting.addWidget(self.submit)
 
@@ -114,7 +136,6 @@ class TextLayer(QVBoxLayout):
         self.output = outputText()
         self.addWidget(self.output)
 
-    
 class FinalLayout(QVBoxLayout):
     def __init__(self):
         super().__init__()
@@ -123,38 +144,26 @@ class FinalLayout(QVBoxLayout):
         top = QWidget()
         text = QWidget()
         self.layText = TextLayer()
-
-        top.setLayout(TopLayer())
+        self.layInp = TopLayer()
+        top.setLayout(self.layInp)
         text.setLayout(self.layText)
 
-        # self.layText.buttonClicked.connect(self.test_function)
+        self.layText.buttonClicked.connect(self.replacement)
 
         self.addWidget(top)
         self.addWidget(text)
 
-    # @pyqtSlot((str))
-    # def test_function(self, document:str):
-    #     print("TestFunction Called")
-
-    #     try:
-    #         print(document)
-    #     except Exception as e:
-    #         print(e)
+    @pyqtSlot((str))
+    def replacement(self, document:str):
+        # Using Created Glossary and Given Plaintext perform call replacement and update Output Text
+        # grab Glossary
+        terms = self.layInp.glossaryWidget.glossary
         
-    #     self.layText.updateOutputText(document) 
-
-    # def startReplacement(self):
-    #     print("Need to implement, startReplacement()")
-    #     # Read text from inputText's TextEdit
-    #     originalText = self.textBox.toPlainText()
-
-    #     # Call Create Glossary
-    #     newGlossary = createGlossary()
-
-    #     # Call Replace Text, passing the glossary and the text
-    #     self.outPut.setText(replaceTerms(originalText, newGlossary))
-
-    #     return
+        try:
+            self.layText.updateOutputText(replaceTerms(document, terms))
+        except Exception as e:
+            print(e)
+            self.layText.updateOutputText("An Error has occured.") 
 
 class MainApplication(QMainWindow):
     def __init__(self):
