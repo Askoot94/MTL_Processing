@@ -52,18 +52,25 @@ def getEntry(Line:str):
     else:
         return None
 
+# Need to Debug HARD
 def replaceTerms(text: str, glossary:list):
     if glossary != [] and text != "":
         send = str()
+        
+        # seperate text per line
         for line in text.split("\n"):
+            # for each dict in glossary
             for term in glossary:
+                
                 # Check for find and replace terms in given dict
                 if "find" and "replace" in term:    
                     line = line.replace(term["find"],term["replace"])
-                    send = send + line
                 else:
                     print("Bad Dict recieved")
                     print(term)
+            
+            # Add new line to end of adjusted line
+            send += line + '\n'
                     
         return send
     else:
