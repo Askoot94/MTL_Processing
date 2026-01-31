@@ -32,7 +32,7 @@ class glossaryInsert(QPlainTextEdit):
                 tempStore = glossaryFile.read()
                 self.setPlainText(tempStore)
         except Exception as error:
-            print(error, "\nNeed to implement warning Dialog")
+            print(error, "\nNeed load file warning Dialog")
 
 
 
@@ -80,6 +80,7 @@ class TopLayer(QHBoxLayout):
         self.fileLocation = QFileDialog()
 
         fileGrab = QPushButton()
+        fileGrab.setText("Load File")
         fileGrab.released.connect(lambda: self.grabFile())
 
         # Consists of Title and Glossary Replacements
