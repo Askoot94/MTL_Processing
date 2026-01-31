@@ -5,8 +5,9 @@ def createGlossary(givenText:str):
     
     # Identify List of terms to replace
     terms = list(dict())
-    
-    if givenText.find(".txt" or ".rtf") != -1:
+
+    # Check the last 4 letters in a text, and check if it ends with ".txt" or ".rtf"
+    if givenText.find(".txt" or ".rtf", givenText.__len__() - 4) != -1:
         # try to open file
         try:
             # with statement will handle opening and closing the file.
