@@ -38,11 +38,14 @@ def getEntry(Line:str):
 
     # If any '=' found then proceed, otherwise ignore.
     if delim != -1:
-        # remove trailing newline on right side
-        Line = Line.rstrip()
-        
+        # Check for trailing newline
+        if Line[Line.__len__()-1] == '\n':
+            end = Line.__len__()-1
+        else:
+            end = Line.__len__()
+
         # Identify and Store character(s) to remove and insert
-        split = dict(find =Line[:delim], replace =Line[delim+1:])
+        split = dict(find =Line[:delim], replace =Line[delim+1:end])
         
         # add the new dictionary to list
         return split
@@ -57,7 +60,7 @@ def replaceTerms(text: str, glossary:list):
                 # Check for find and replace terms in given dict
                 if "find" and "replace" in term:    
                     line = line.replace(term["find"],term["replace"])
-                    send = send + '\n' + line
+                    send = send + line
                 else:
                     print("Bad Dict recieved")
                     print(term)
