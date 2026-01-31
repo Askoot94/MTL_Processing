@@ -1,11 +1,11 @@
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QTextEdit, 
     QHBoxLayout, QVBoxLayout, QPushButton,
     QPlainTextEdit, QFileDialog, QScrollBar,
     QWidget
 )
-from PyQt6.QtGui import QTextDocument
+from PyQt6.QtGui import QFocusEvent, QTextDocument
 
 from .glossary import createGlossary, replaceTerms
 
@@ -26,8 +26,11 @@ class title(QLabel):
 class glossaryInsert(QPlainTextEdit):
     glossary = []
 
+    def focusOutEvent(self, e: QFocusEvent | None) -> None:
+        self.updateGlossary()
+        return super().focusOutEvent(e)
+
     def updateGlossary(self):
-        print("Update Glossary Called")
         plainText = self.toPlainText()
 
         # Need to implment faster iteration that checks if term already exists in list before adding.
@@ -46,27 +49,16 @@ class glossaryInsert(QPlainTextEdit):
         self.addScrollBarWidget(QScrollBar(), Qt.AlignmentFlag(0x0002))
 
 class TopLayer(QHBoxLayout):
-    @pyqtSlot()
-    def startGlossary(self):
-        # Call for update to Glossary property in glossaryInsert
-        self.glossaryWidget.updateGlossary()
-
     def __init__(self):
         super().__init__()
 
         self.glossaryWidget = glossaryInsert()
         capTitle = title()
         capTitle.setAlignment(Qt.AlignmentFlag(0x0021))
-        
-        update = QPushButton()
-        update.released.connect(self.startGlossary)
-        update.setFixedSize(50, 20)
-        update.setText("Update")
 
         # Consists of Title and Glossary Replacements
         self.addWidget(capTitle)
         self.addWidget(self.glossaryWidget)
-        self.addWidget(update)
 
 # This is the TextEdit box that will receive the pre-replaced text
 class inputText(QTextEdit):
