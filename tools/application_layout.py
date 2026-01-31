@@ -34,6 +34,13 @@ class glossaryInsert(QPlainTextEdit):
         except Exception as error:
             print(error, "\nNeed load file warning Dialog")
 
+    def saveFile(self, fileLocation:str):
+        try:
+            with open(fileLocation, "wt", encoding="UTF-8") as glossaryFile:
+                tempStore = self.toPlainText()
+                glossaryFile.write(tempStore)
+        except Exception as error:
+            print(error, "\nNeed save file warning Dialog")
 
 
     def focusOutEvent(self, e: QFocusEvent | None) -> None:
@@ -70,6 +77,16 @@ class TopLayer(QHBoxLayout):
         # with file start loading the glossary terms
         self.glossaryWidget.loadFile(result[0])
 
+    @pyqtSlot()
+    def saveFile(self):
+        # Set Options for openfile5
+        result = self.fileLocation.getSaveFileName(filter="*.txt *.rtf")
+        
+        # result is a tuple with [0] = the file location Dir and [1] = filters
+       
+        # with file start loading the glossary terms
+        self.glossaryWidget.saveFile(result[0])
+
     def __init__(self):
         super().__init__()
 
@@ -83,9 +100,14 @@ class TopLayer(QHBoxLayout):
         fileGrab.setText("Load File")
         fileGrab.released.connect(lambda: self.grabFile())
 
+        fileSave = QPushButton()
+        fileSave.setText("Save File")
+        fileSave.released.connect(lambda: self.saveFile())
+
         # Consists of Title and Glossary Replacements
         self.addWidget(capTitle)
         self.addWidget(fileGrab)
+        self.addWidget(fileSave)
         self.addWidget(self.glossaryWidget)
 
 # This is the TextEdit box that will receive the pre-replaced text
@@ -192,4 +214,5 @@ class MainApplication(QMainWindow):
         parentWidget = QWidget()
         parentWidget.setLayout(FinalLayout())
 
+        self.setWindowTitle("Bulk Term Replacments")
         self.setCentralWidget(parentWidget)
