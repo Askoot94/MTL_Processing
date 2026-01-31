@@ -1,11 +1,11 @@
-from PyQt6.QtCore import QEvent, Qt, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QTextEdit, 
     QHBoxLayout, QVBoxLayout, QPushButton,
     QPlainTextEdit, QFileDialog, QScrollBar,
     QWidget
 )
-from PyQt6.QtGui import QFocusEvent, QTextDocument
+from PyQt6.QtGui import QFocusEvent
 
 from .glossary import createGlossary, replaceTerms
 
@@ -25,6 +25,16 @@ class title(QLabel):
 
 class glossaryInsert(QPlainTextEdit):
     glossary = []
+
+    def loadFile(self, fileLocation: str):
+        try:
+            with open(fileLocation, "rt", encoding="UTF-8") as glossaryFile:
+                tempStore = glossaryFile.read()
+                self.setPlainText(tempStore)
+        except Exception as error:
+            print(error, "\nNeed to implement warning Dialog")
+
+
 
     def focusOutEvent(self, e: QFocusEvent | None) -> None:
         self.updateGlossary()
@@ -49,6 +59,17 @@ class glossaryInsert(QPlainTextEdit):
         self.addScrollBarWidget(QScrollBar(), Qt.AlignmentFlag(0x0002))
 
 class TopLayer(QHBoxLayout):
+
+    @pyqtSlot()
+    def grabFile(self):
+        # Set Options for openfile5
+        result = self.fileLocation.getOpenFileName(filter="*.txt *.rtf", options=QFileDialog.Option.ReadOnly)
+        
+        # result is a tuple with [0] = the file location Dir and [1] = filters
+       
+        # with file start loading the glossary terms
+        self.glossaryWidget.loadFile(result[0])
+
     def __init__(self):
         super().__init__()
 
@@ -56,8 +77,14 @@ class TopLayer(QHBoxLayout):
         capTitle = title()
         capTitle.setAlignment(Qt.AlignmentFlag(0x0021))
 
+        self.fileLocation = QFileDialog()
+
+        fileGrab = QPushButton()
+        fileGrab.released.connect(lambda: self.grabFile())
+
         # Consists of Title and Glossary Replacements
         self.addWidget(capTitle)
+        self.addWidget(fileGrab)
         self.addWidget(self.glossaryWidget)
 
 # This is the TextEdit box that will receive the pre-replaced text
