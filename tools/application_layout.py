@@ -59,29 +59,31 @@ class glossaryInsert(QPlainTextEdit):
 
         self.setBaseSize(360, 400)
         self.setMaximumHeight(800)
-
+        
+        formatting = self.font()
+        formatting.setPointSize(12)
+        self.setFont(formatting)
+        
         self.setPlaceholderText("Insert glossary replacement terms here.\n" 
         "Format: {Find}={Replace} i.e Hello=World")
 
         self.addScrollBarWidget(QScrollBar(), Qt.AlignmentFlag(0x0002))
-# This is the TextEdit box that will receive the pre-replaced text
 
+# This is the TextEdit box that will receive the pre-replaced text
 class inputText(QTextEdit):
-    
     def __init__(self):
         super().__init__()
 
         self.setPlaceholderText("Enter Text to perform replacement...")
         
         formatting = self.font()
-        formatting.setPointSize(14)
+        formatting.setPointSize(12)
         self.setFont(formatting)
         
         self.setBaseSize(960, 900)
         self.setMaximumHeight(1000)
     
 class outputText(QTextEdit):
-    
     def updateText(self, str):
         self.setText(str)
 
@@ -100,7 +102,7 @@ class outputText(QTextEdit):
         
         self.setPlaceholderText("Replaced Text will appear here...")
 
-class TopLayer(QGridLayout):
+class UserInputtingLayer(QGridLayout):
     replacementBegin = pyqtSignal((str, ))
 
     @pyqtSlot()
@@ -129,7 +131,7 @@ class TopLayer(QGridLayout):
         # Consists of Plain Text and Glossary Replacements
         super().__init__()
 
-        # Create require widgets
+        # Create required widgets
         self.glossaryWidget = glossaryInsert()
         self.fileLocation = QFileDialog()
         self.textBox = inputText()
@@ -151,17 +153,15 @@ class TopLayer(QGridLayout):
         glossButtonsLayout.setSpacing(6)
         glossButtonsLayout.addWidget(fileGrab)
         glossButtonsLayout.addWidget(fileSave)
+        glossButtonsLayout.setContentsMargins(0,0,0,0)
         fileButtonsWidget = QWidget()
         fileButtonsWidget.setLayout(glossButtonsLayout)
 
-        # Connect all widgets together in a grid
+        # Connect all widgets together in grid
         self.addWidget(self.glossaryWidget, 0,0)
         self.addWidget(fileButtonsWidget, 1,0)
         self.addWidget(self.textBox, 0,1)
         self.addWidget(self.submit, 1,1)
-
-        # Add grid to this layout
-
 
 class TextLayer(QVBoxLayout):
     def updateOutputText(self, text:str):
@@ -191,10 +191,11 @@ class FinalLayout(QVBoxLayout):
         text = QWidget()
 
         self.layText = TextLayer()
-        self.layInp = TopLayer()
+        self.layInp = UserInputtingLayer()
         
         top.setLayout(self.layInp)
         text.setLayout(self.layText)
+        self.setContentsMargins(5,10,5,10)
         self.layInp.replacementBegin.connect(self.replacement)
         
         self.addWidget(capTitle)
