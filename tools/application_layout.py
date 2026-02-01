@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QTextEdit, 
     QHBoxLayout, QVBoxLayout, QPushButton,
     QPlainTextEdit, QFileDialog, QScrollBar,
-    QWidget
+    QWidget, QGridLayout
 )
 from PyQt6.QtGui import QFocusEvent
 
@@ -64,53 +64,8 @@ class glossaryInsert(QPlainTextEdit):
         "Format: {Find}={Replace} i.e Hello=World")
 
         self.addScrollBarWidget(QScrollBar(), Qt.AlignmentFlag(0x0002))
-
-class TopLayer(QHBoxLayout):
-
-    @pyqtSlot()
-    def grabFile(self):
-        # Set Options for openfile5
-        result = self.fileLocation.getOpenFileName(filter="*.txt *.rtf", options=QFileDialog.Option.ReadOnly)
-        
-        # result is a tuple with [0] = the file location Dir and [1] = filters
-       
-        # with file start loading the glossary terms
-        self.glossaryWidget.loadFile(result[0])
-
-    @pyqtSlot()
-    def saveFile(self):
-        # Set Options for openfile5
-        result = self.fileLocation.getSaveFileName(filter="*.txt *.rtf")
-        
-        # result is a tuple with [0] = the file location Dir and [1] = filters
-       
-        # with file start loading the glossary terms
-        self.glossaryWidget.saveFile(result[0])
-
-    def __init__(self):
-        super().__init__()
-
-        self.glossaryWidget = glossaryInsert()
-        capTitle = title()
-        capTitle.setAlignment(Qt.AlignmentFlag(0x0021))
-
-        self.fileLocation = QFileDialog()
-
-        fileGrab = QPushButton()
-        fileGrab.setText("Load File")
-        fileGrab.released.connect(lambda: self.grabFile())
-
-        fileSave = QPushButton()
-        fileSave.setText("Save File")
-        fileSave.released.connect(lambda: self.saveFile())
-
-        # Consists of Title and Glossary Replacements
-        self.addWidget(capTitle)
-        self.addWidget(fileGrab)
-        self.addWidget(fileSave)
-        self.addWidget(self.glossaryWidget)
-
 # This is the TextEdit box that will receive the pre-replaced text
+
 class inputText(QTextEdit):
     
     def __init__(self):
@@ -145,14 +100,70 @@ class outputText(QTextEdit):
         
         self.setPlaceholderText("Replaced Text will appear here...")
 
-class TextLayer(QVBoxLayout):
-    buttonClicked = pyqtSignal((str, ))
+class TopLayer(QGridLayout):
+    replacementBegin = pyqtSignal((str, ))
 
     @pyqtSlot()
     def startReplacement(self):
         document = self.textBox.toPlainText()
-        self.buttonClicked.emit(document)
+        self.replacementBegin.emit(document)
 
+    @pyqtSlot()
+    def grabFile(self):
+        # Set Options for openfile
+        result = self.fileLocation.getOpenFileName(filter="*.txt *.rtf", options=QFileDialog.Option.ReadOnly)
+        
+        # result is a tuple with [0] = the file location Dir and [1] = filters
+        # with file start loading the glossary terms
+        self.glossaryWidget.loadFile(result[0])
+
+    @pyqtSlot()
+    def saveFile(self):
+        # Set Options for openfile
+        result = self.fileLocation.getSaveFileName(filter="*.txt *.rtf")
+    
+        # with file start saving the glossary terms
+        self.glossaryWidget.saveFile(result[0])
+
+    def __init__(self):
+        # Consists of Plain Text and Glossary Replacements
+        super().__init__()
+
+        # Create require widgets
+        self.glossaryWidget = glossaryInsert()
+        self.fileLocation = QFileDialog()
+        self.textBox = inputText()
+
+        fileGrab = QPushButton()
+        fileGrab.setText("Load File")
+        fileGrab.released.connect(lambda: self.grabFile())
+
+        fileSave = QPushButton()
+        fileSave.setText("Save File")
+        fileSave.released.connect(lambda: self.saveFile())
+        
+        self.submit = QPushButton()
+        self.submit.setText("Start Replacement")
+        self.submit.clicked.connect(lambda: self.startReplacement())
+
+        # group Glossary with it's buttons
+        glossButtonsLayout = QHBoxLayout()
+        glossButtonsLayout.setSpacing(6)
+        glossButtonsLayout.addWidget(fileGrab)
+        glossButtonsLayout.addWidget(fileSave)
+        fileButtonsWidget = QWidget()
+        fileButtonsWidget.setLayout(glossButtonsLayout)
+
+        # Connect all widgets together in a grid
+        self.addWidget(self.glossaryWidget, 0,0)
+        self.addWidget(fileButtonsWidget, 1,0)
+        self.addWidget(self.textBox, 0,1)
+        self.addWidget(self.submit, 1,1)
+
+        # Add grid to this layout
+
+
+class TextLayer(QVBoxLayout):
     def updateOutputText(self, text:str):
         self.output.updateText(text)
 
@@ -160,16 +171,6 @@ class TextLayer(QVBoxLayout):
         super().__init__()
 
         inputting = QHBoxLayout()
-        
-        self.textBox = inputText()
-        inputting.addWidget(self.textBox)
-        
-        self.submit = QPushButton()
-        self.submit.setText("Start Replacement")
-        self.submit.clicked.connect(lambda: self.startReplacement())
-
-        inputting.addWidget(self.submit)
-
         importGroup = QWidget()
         importGroup.setLayout(inputting)
 
@@ -182,16 +183,21 @@ class FinalLayout(QVBoxLayout):
     def __init__(self):
         super().__init__()
 
+        capTitle = title()
+        capTitle.setAlignment(Qt.AlignmentFlag(0x0021))
+
         # Combine Top Layer with Text Layer
         top = QWidget()
         text = QWidget()
+
         self.layText = TextLayer()
         self.layInp = TopLayer()
+        
         top.setLayout(self.layInp)
         text.setLayout(self.layText)
-
-        self.layText.buttonClicked.connect(self.replacement)
-
+        self.layInp.replacementBegin.connect(self.replacement)
+        
+        self.addWidget(capTitle)
         self.addWidget(top)
         self.addWidget(text)
 
